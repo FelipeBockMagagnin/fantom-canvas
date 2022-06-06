@@ -1,0 +1,40 @@
+{
+    "items" : [
+        {
+            "name": "felpi",
+            "color": "#123",
+            "x": 0,
+            "y": 0
+        },
+        {
+            "name": "felpi",
+            "color": "#123",
+            "x": 1,
+            "y": 0
+        },
+        {
+            "name": "felpi",
+            "color": "#123",
+            "x": 2,
+            "y": 0
+        },
+        {
+            "name": "felpi",
+            "color": "#123",
+            "x": 1,
+            "y": 0
+        },
+        {
+            "name": "felpi",
+            "color": "#123",
+            "x": 1,
+            "y": 1
+        },
+        {
+            "name": "felpi",
+            "color": "#123",
+            "x": 1,
+            "y": 2
+        }
+    ]
+}
