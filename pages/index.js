@@ -3,6 +3,7 @@ import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import canvas from '../src/data.json'
 import { Fragment } from 'react'
+import Swal from 'sweetalert2'
 
 export default function Home() {
   return (
@@ -15,47 +16,55 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Fantom Canvas!</a>
+          Fantom Canvas
         </h1>
 
-        <div className='canvas'>
-          {buildCanvas()}
+        <div className='canvas-container'>
+          <div className='canvas'>
+            {buildCanvas()}
+          </div>
         </div>
+
 
       </main>
 
-     
+
     </div>
   )
 }
 
-function buildCanvas(){
-    let lastX = 0;
-    let lastY = 0;
+function click(element) {
+  console.log(element);
+  Swal.fire('(x:' + element.x + ' y:'+ element.y + ') Owned by ' + element.name)
+}
 
-    let elements = canvas.items.map(element => {      
-      /* 
-        Color {element.name}
-        <br/>
-        Name {element.color}
-        <br/>
-        X: {element.x}
-        <br/>
-        Y: {element.y}
-     */
-      let item = (
-        <Fragment>
-          {element.x < lastX ? (<div className='break'></div>) : ''}
-          <div className='item' style={{backgroundColor: element.color}}>
-            
-          </div>
-        </Fragment>
-      )
-      lastX = element.x;
-      lastY = element.y;
+function buildCanvas() {
+  let lastX = 0;
+  let lastY = 0;
 
-      return item;
-    })
+  let elements = canvas.items.map(element => {
+    /* 
+      Color {element.name}
+      <br/>
+      Name {element.color}
+      <br/>
+      X: {element.x}
+      <br/>
+      Y: {element.y}
+   */
+    let item = (
+      <Fragment>
+        {element.x < lastX ? (<div className='break'></div>) : ''}
+        <div className='item' style={{ backgroundColor: element.color }} onClick={() => click(element)}>
 
-    return elements
+        </div>
+      </Fragment>
+    )
+    lastX = element.x;
+    lastY = element.y;
+
+    return item;
+  })
+
+  return elements
 }

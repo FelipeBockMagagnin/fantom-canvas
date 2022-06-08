@@ -15,17 +15,30 @@ a {
   box-sizing: border-box;
 }
 
+.canvas-container{
+  width: 100%;
+  max-width: 100%;
+  overflow: auto;
+}
 
 .canvas {
-  width: 100%;
+  width: 1300px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .item {
-  padding: 5px;
+  padding: 8px;
+}
+
+.canvas :hover {
+  transform: scale(2);
+  padding: 6px;
+  border: 2px solid black;
 }
 
 .break {
