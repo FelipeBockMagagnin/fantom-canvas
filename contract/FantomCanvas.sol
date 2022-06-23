@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract BadBalloons is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
+contract FantomCanvas is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     using Strings for uint256;
 
@@ -16,19 +16,18 @@ contract BadBalloons is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     //NFT
     string public baseExtension = ".json";
     string private _baseUrl;
-    uint256 public maxMintable = 10000;
+    uint256 public maxMintable = 4800;
     Counters.Counter private _tokenIdCounter;
     uint256 public price = 1 ether;
-    uint256 public change_color_fee = 0.1 ether;
 
     //State
-    bool public pause_public_mint = true;
-    bool public pause_whitelist_mint = true;
+    bool public pause = true;
 
     //Whitelist
-    mapping(address => uint8) public whitelistedAddress;
+    mapping(address => uint8) public freeMintAddress;
+    mapping(uint256 => string) public colors;
 
-    constructor(string memory baseUrl) ERC721("BadBalloons", "BB") {
+    constructor(string memory baseUrl) ERC721("FantomCanvas", "FC") {
         _baseUrl = baseUrl;
     }
 
@@ -36,47 +35,51 @@ contract BadBalloons is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         return _baseUrl;
     }
 
-    function mint_public(uint256 amount) public payable {
+    function mintPublic(uint256 amount, string memory color) public payable {
         uint256 id = _tokenIdCounter.current();
 
-        require(!pause_public_mint, "Contract Paused");
+        require(pause, "Contract Paused");
         require(msg.value == price * amount, "Invalid amount");
-        require(id < (maxMintable), "No more balloons are available");
+        require(id < (maxMintable), "No more squares are available");        
 
         // transfer amount to owner
         depositAddress.transfer(price * amount);
 
         for (uint256 i = 0; i < amount; i++) {
-            mint(msg.sender);
-        }        
+            mint(msg.sender, color);
+        }
     }
 
-    function mint(address to) internal {
-        require(_tokenIdCounter.current() < maxMintable, "All balloons have been minted!");
-        _safeMint(to, _tokenIdCounter.current());
+    function mint(address to, string memory color) internal {
+        uint256 id = _tokenIdCounter.current();
+
+        require(id < maxMintable, "All squares have been minted!");
+        _safeMint(to, id);
+        colors[id] = color;
         _tokenIdCounter.increment();
     }    
 
-    //Whitelist
-    function addWhitelistAddresses(address[] memory _addresses) external onlyOwner {
+    //Free mints (Fantom Chess community) 
+    function addFreeMintAddresses(address[] memory _addresses) external onlyOwner {
         for (uint256 i = 0; i < _addresses.length; i++) {
             require(_addresses[i] != address(0), "Address cannot be 0.");
-            require(whitelistedAddress[_addresses[i]] == 0, "Balance must be 0.");
-            whitelistedAddress[_addresses[i]] = 10;
+            require(freeMintAddress[_addresses[i]] == 0, "Balance must be 0.");
+            freeMintAddress[_addresses[i]] = 5;
         }
     }
     
-    function mint_whitelist(uint8 amount) public payable {
-        require(!pause_whitelist_mint, "Pre-sale has not started yet.");
-        require(whitelistedAddress[msg.sender] > 0, "The address can no longer pre-order");
-        require(amount <= whitelistedAddress[msg.sender], "All mints of the address are over");
+    function freeMint(uint8 amount, string memory color) public payable {
+        require(pause, "Mint has not started yet.");
+        require(freeMintAddress[msg.sender] > 0, "The address can no longer free mint");
+        require(amount <= freeMintAddress[msg.sender], "All free mints of the address are over");
         require(msg.value == price * amount, "Invalid amount");
 
-        depositAddress.transfer(price * amount);
+        //Without transfer
+        //depositAddress.transfer(price * amount);
 
-        whitelistedAddress[msg.sender] -= amount;
+        freeMintAddress[msg.sender] -= amount;
         for (uint8 i = 0; i < amount; i++) {
-            mint(msg.sender);
+            mint(msg.sender, color);
         }
     }
 
@@ -85,12 +88,8 @@ contract BadBalloons is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         maxMintable = value;
     }
 
-    function set_pause_public_mint(bool _pause) public onlyOwner {
-        pause_public_mint = _pause;
-    }
-
-    function set_pause_whitelist_mint(bool _pause) public onlyOwner {
-        pause_whitelist_mint = _pause;
+    function setPause(bool _pause) public onlyOwner {
+        pause = _pause;
     }
 
     function setTokenURI(uint256 tokenId, string memory newURI) public onlyOwner {
@@ -156,6 +155,10 @@ contract BadBalloons is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
 
             return result;
         }
+    }
+
+    function getColor(uint256 id) external view returns (string memory) {
+        return colors[id];
     }
 
     function supportsInterface(bytes4 interfaceId)
