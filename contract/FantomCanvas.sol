@@ -19,13 +19,16 @@ contract FantomCanvas is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     uint256 public maxMintable = 4800;
     Counters.Counter private _tokenIdCounter;
     uint256 public price = 1 ether;
+    uint256 public paint_price = 1 ether;
 
     //State
     bool public pause = true;
 
     //Whitelist
     mapping(address => uint8) public freeMintAddress;
-    mapping(uint256 => string) public colors;
+
+    //colors
+    mapping(uint256 => uint8) public colors;
 
     constructor(string memory baseUrl) ERC721("FantomCanvas", "FC") {
         _baseUrl = baseUrl;
@@ -35,25 +38,25 @@ contract FantomCanvas is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         return _baseUrl;
     }
 
-    function mintPublic(uint256 amount, string memory color) public payable {
-        uint256 id = _tokenIdCounter.current();
+    function mintPublic(uint256 id, uint8 color) public payable {
+        //uint256 id = _tokenIdCounter.current();
 
         require(pause, "Contract Paused");
-        require(msg.value == price * amount, "Invalid amount");
+        require(msg.value == price, "Invalid amount");
         require(id < (maxMintable), "No more squares are available");        
+        require(colors[id] == 0, "The square is already minted!");
+        require(color > 0, "Color must be > 0!");
 
         // transfer amount to owner
-        depositAddress.transfer(price * amount);
-
-        for (uint256 i = 0; i < amount; i++) {
-            mint(msg.sender, color);
-        }
+        depositAddress.transfer(price);
+        mint(msg.sender, id, color);
     }
 
-    function mint(address to, string memory color) internal {
-        uint256 id = _tokenIdCounter.current();
-
+    function mint(address to, uint256 id, uint8 color) internal {
+        //uint256 id = _tokenIdCounter.current();
         require(id < maxMintable, "All squares have been minted!");
+        require(colors[id] == 0, "The square is already minted!");
+
         _safeMint(to, id);
         colors[id] = color;
         _tokenIdCounter.increment();
@@ -68,22 +71,41 @@ contract FantomCanvas is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         }
     }
     
-    function freeMint(uint8 amount, string memory color) public payable {
+    function freeMint(uint256 id, uint8 color) public payable {
         require(pause, "Mint has not started yet.");
         require(freeMintAddress[msg.sender] > 0, "The address can no longer free mint");
-        require(amount <= freeMintAddress[msg.sender], "All free mints of the address are over");
-        require(msg.value == price * amount, "Invalid amount");
+        require(msg.value == price, "Invalid amount");
+        require(colors[id] > 0, "The square is already minted!");
+        require(color > 0, "Color must be > 0!");
 
         //Without transfer
         //depositAddress.transfer(price * amount);
 
-        freeMintAddress[msg.sender] -= amount;
-        for (uint8 i = 0; i < amount; i++) {
-            mint(msg.sender, color);
-        }
+        freeMintAddress[msg.sender] -= 1;
+        mint(msg.sender, id, color);
+    }
+    
+    //Paint functions 
+    function paint(uint256 id, uint8 color) public payable {
+        require(pause, "Contract Paused");
+        require(msg.value == paint_price, "Invalid amount");
+        require(id < (maxMintable), "No more squares are available");        
+        require(colors[id] > 0, "Square not minted!");
+        require(color > 0, "Color must be > 0!");
+
+        //check if address own token
+        require(ownerOf(id) == msg.sender, "You don't own this square");
+
+        // transfer amount to owner
+        depositAddress.transfer(paint_price);
+        colors[id] = color;
     }
 
     //Setters - only owner
+    function setPaintPrice(uint256 value) public onlyOwner {
+        paint_price = value;
+    }
+
     function setMaxMintable(uint256 value) public onlyOwner {
         maxMintable = value;
     }
@@ -157,7 +179,7 @@ contract FantomCanvas is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         }
     }
 
-    function getColor(uint256 id) external view returns (string memory) {
+    function getColor(uint256 id) external view returns (uint8) {
         return colors[id];
     }
 
