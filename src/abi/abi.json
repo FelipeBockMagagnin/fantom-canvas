@@ -178,9 +178,9 @@
 		"name": "colors",
 		"outputs": [
 			{
-				"internalType": "string",
+				"internalType": "uint8",
 				"name": "",
-				"type": "string"
+				"type": "uint8"
 			}
 		],
 		"stateMutability": "view",
@@ -202,14 +202,14 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint8",
-				"name": "amount",
-				"type": "uint8"
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
 			},
 			{
-				"internalType": "string",
+				"internalType": "uint8",
 				"name": "color",
-				"type": "string"
+				"type": "uint8"
 			}
 		],
 		"name": "freeMint",
@@ -266,22 +266,9 @@
 		"name": "getColor",
 		"outputs": [
 			{
-				"internalType": "string",
+				"internalType": "uint8",
 				"name": "",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getColors",
-		"outputs": [
-			{
-				"internalType": "string[]",
-				"name": "",
-				"type": "string[]"
+				"type": "uint8"
 			}
 		],
 		"stateMutability": "view",
@@ -347,13 +334,13 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "amount",
+				"name": "id",
 				"type": "uint256"
 			},
 			{
-				"internalType": "string",
+				"internalType": "uint8",
 				"name": "color",
-				"type": "string"
+				"type": "uint8"
 			}
 		],
 		"name": "mintPublic",
@@ -401,6 +388,37 @@
 				"internalType": "address",
 				"name": "",
 				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint8",
+				"name": "color",
+				"type": "uint8"
+			}
+		],
+		"name": "paint",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "paint_price",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -556,6 +574,19 @@
 			}
 		],
 		"name": "setMaxMintable",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "setPaintPrice",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
