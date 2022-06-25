@@ -35,13 +35,13 @@ a {
 }
 
 .item {
-  padding: 8px;
+  padding: 15px;
+  border: 1px solid black;
+  cursor: pointer;
 }
 
 .canvas :hover {
-  transform: scale(2);
-  padding: 6px;
-  border: 2px solid black;
+  border-color: red;
 }
 
 .break {
@@ -52,4 +52,8 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.center {
+  text-align: center;
 }

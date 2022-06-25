@@ -6,13 +6,13 @@ import Swal from 'sweetalert2'
 import Header from '../components/header'
 import { useContract, useContractRead, useSigner } from 'wagmi'
 import abi from '../src/abi/abi.json';
-
-
+import { ethers } from "ethers";
 
 export default function Home() {
-
   const [results, setResults] = useState([]);
   const { data: signer, isError, isLoading } = useSigner()
+  const [ loading, setLoading ] = useState(true);
+  const [ lastUpdate, setLastUpdate ] = useState(new Date());
 
   const contract = useContract({
     addressOrName: '0x292c25415dac88bfd9a0017270357e9d42b7deb7',
@@ -20,11 +20,20 @@ export default function Home() {
     signerOrProvider: signer
   })
 
+  const colors = {
+    1: 'black',
+    2: 'white',
+    3: 'red',
+    4: 'orange',
+    5: 'green',
+    6: 'yellow'
+  }
+
   useEffect(() => {
     console.log(contract);
 
     if(!contract.provider) return;
-    setTimeout(getData, 3000);
+    getData();
   }, [contract.provider])
 
   async function getData() {
@@ -47,6 +56,7 @@ export default function Home() {
       curr = await Promise.all(chunks.map(prop =>
         new Promise(async resolve => {
           const data = await contract.getColor(prop.id.toString());
+          console.log(data);
           resolve({id: prop.id, color: data});
         })));
       
@@ -59,7 +69,7 @@ export default function Home() {
 
     fn(requests.splice(0, 50), res)
       .then(data => {
-        let items = [{}]
+        let items = []
         data.forEach(element => {
           if(!Array.isArray(element)) return;
           element.forEach(item => {
@@ -69,12 +79,17 @@ export default function Home() {
 
         setResults(items);
       })
-      .catch(err => console.error(err))
+      .catch(err => {
+        console.error(err);
+      }).finally(() => {
+        setLoading(false);
+        setLastUpdate(new Date());
+      })
   }
-
+  
   return (
     <div className={styles.container}>
-      <Header />
+      <Header update={lastUpdate}/>
 
       <Head>
         <title>Fantom Canvas</title>
@@ -84,20 +99,7 @@ export default function Home() {
 
       <main className={styles.main}>
         <div className='canvas-container'>
-          <div className='canvas'>
-
-          {results && results.map((x, index) => {
-            return (
-              <div className='item' key={index} style={{ backgroundColor:  x.color ? 'black' : 'blue' }} onClick={() => click(
-                {
-                  index: x.id,
-                  color: x.color
-                }
-              )}></div>
-            )
-          })} 
-
-          </div>
+          {loading ? <LoadingCanvas /> : <Canvas /> }
         </div>
       </main>
     </div>
@@ -108,44 +110,61 @@ export default function Home() {
     try{
       const data = await contract.ownerOf(element.index); 
       console.log(element);
-      Swal.fire('id: ' + element.index + '(x:' + element.x + ' y:' + element.y + ') Owned by ' + data)
+      Swal.fire('id: ' + element.index + ' Owned by ' + data)
     
       console.log('Success', data)
     } catch(err) {
-      console.log('without owner', element)
+      console.log('without owner', element);
+      Swal.fire('Square without owner, id: ' + element.index).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          buy(element.index)
+        } else if (result.isDenied) {
+          Swal.fire('Changes are not saved', '', 'info')
+        }
+      })
     }
   }
-}
 
+  async function buy(id, color = 1){
+    let overrides = {
+      value: ethers.utils.parseEther("1")
+    };
+    
+    let tx = await contract.mintPublic(id, color, overrides);
+    console.log(tx);
+  }
 
+  function Canvas() {
+    return (
+      <div className='canvas'>
+  
+      {results && results.map((x, index) => {
+        return (
+          <div className='item' key={index} style={{ backgroundColor: colors[x.color] }} onClick={() => click(
+            {
+              index: x.id,
+              color: x.color
+            }
+          )}></div>
+        )
+      })} 
+  
+      </div>
+    );
+  }
 
-function buildCanvas() {
-  let lastX = 0;
-  let lastY = 0;
+  function LoadingCanvas() {
+    return (
+      <div className='canvas' style={{ textAlign: ' center'}}>
+  
+        Loading...
 
-  let elements = canvas.items.map(element => {
-    /* 
-      Color {element.name}
-      <br/>
-      Name {element.color}
-      <br/>
-      X: {element.x}
-      <br/>
-      Y: {element.y}
-   */
-    let item = (
-      <Fragment>
-        {element.x < lastX ? (<div className='break'></div>) : ''}
-        <div className='item' style={{ backgroundColor: element.color }} onClick={() => click(element)}>
-
-        </div>
-      </Fragment>
-    )
-    lastX = element.x;
-    lastY = element.y;
-
-    return item;
-  })
-
-  return elements
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+      </div>
+    );
+  }  
 }
