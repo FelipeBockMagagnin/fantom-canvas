@@ -116,16 +116,22 @@ export default function Home() {
     try{
       const data = await contract.ownerOf(element.index); 
       console.log(element);
-      Swal.fire('id: ' + element.index + ' Owned by ' + data)
+      Swal.fire('Square: ' + element.index + ' Owned by ' + data)
     
       console.log('Success', data)
     } catch(err) {
       console.log('without owner', element);
-      Swal.fire('Square without owner, id: ' + element.index).then((result) => {
+      Swal.fire({
+        title: 'Square ' + element.index,
+        html: "You can buy this square <br/> <br/> Price: 3 FTM <br/><br/> Choose a color: <br/> <input type='color' value='black'/>",
+        icon: 'none',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Mint!'
+      }).then((result) => {
         if (result.isConfirmed) {
           buy(element.index)
-        } else if (result.isDenied) {
-          Swal.fire('Changes are not saved', '', 'info')
         }
       })
     }
