@@ -7,6 +7,8 @@ import Header from '../components/header'
 import { useContract, useContractRead, useSigner } from 'wagmi'
 import abi from '../src/abi/abi.json';
 import { ethers } from "ethers";
+import axios from 'axios';
+import data from '../data.json';
 
 export default function Home() {
   const [results, setResults] = useState([]);
@@ -29,21 +31,25 @@ export default function Home() {
   }
 
   useEffect(() => {
+    if(data){
+      setResults(data.data);
+    }
+    
     console.log(contract);
-
-
-   
-
-
     if(!contract.provider) return;
     getData();
   }, [contract.provider])
 
-  async function getData() {
-    const res1 = await fetch('/api/data')
-    const data = await res1.json()
-    console.log(data);
+  function saveToCache(items){
+    axios.post(
+      '/api/data',
+      items
+    ).then(data => {
+      console.log(data);
+    });
+  }
 
+  async function getData() {
     if(!contract) return;
 
     console.log('getData');
@@ -63,7 +69,6 @@ export default function Home() {
       curr = await Promise.all(chunks.map(prop =>
         new Promise(async resolve => {
           const data = await contract.getColor(prop.id.toString());
-          console.log(data);
           resolve({id: prop.id, color: data});
         })));
       
@@ -84,6 +89,7 @@ export default function Home() {
           });
         });
 
+        saveToCache(items);
         setResults(items);
       })
       .catch(err => {
@@ -95,11 +101,11 @@ export default function Home() {
   
   return (
     <div className={styles.container}>
-      <Header loading={loading}/>
+      <Header loading={loading} date={data.date}/>
 
       <main className={styles.main}>
         <div className='canvas-container'>
-          {loading ? <LoadingCanvas /> : <Canvas /> }
+          <Canvas />
         </div>
       </main>
     </div>
@@ -116,7 +122,6 @@ export default function Home() {
     } catch(err) {
       console.log('without owner', element);
       Swal.fire('Square without owner, id: ' + element.index).then((result) => {
-        /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
           buy(element.index)
         } else if (result.isDenied) {

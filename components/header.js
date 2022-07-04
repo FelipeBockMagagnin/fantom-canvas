@@ -2,7 +2,7 @@ import styles from '../styles/Home.module.css'
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Swal from 'sweetalert2'
 
-export default function Header({ loading }) {
+export default function Header({ loading, date }) {
     return (
         <div className='header'>
 
@@ -19,7 +19,9 @@ export default function Header({ loading }) {
     function LoadingCanvas() {
         return (
             <div className='canvas' style={{ textAlign: ' center' }}>
-                Loading...
+                Loading new Data
+                <br/>
+                Last update: {new Date(date).toLocaleString()} 
             </div>
         );
     }
