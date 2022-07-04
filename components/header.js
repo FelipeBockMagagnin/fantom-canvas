@@ -2,7 +2,7 @@ import styles from '../styles/Home.module.css'
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Swal from 'sweetalert2'
 
-export default function Header({update}) {
+export default function Header({ loading }) {
     return (
         <div className='header'>
 
@@ -10,17 +10,17 @@ export default function Header({update}) {
                 Fantom Canvas
             </h1>
 
-            <div className='center'>
-                Last Update 
-                <br/>
-                {dateTime(update)}
-            </div>
+            {loading ? <LoadingCanvas /> : ''}
 
             <ConnectButton />
         </div>
     )
 
-    function dateTime(lastUpdate) {
-        return lastUpdate.getHours() + ':' + lastUpdate.getMinutes() + ':' + ('0' + lastUpdate.getSeconds()).slice(-2);
+    function LoadingCanvas() {
+        return (
+            <div className='canvas' style={{ textAlign: ' center' }}>
+                Loading...
+            </div>
+        );
     }
 }
