@@ -14,6 +14,7 @@ export default function Home() {
   const [results, setResults] = useState([]);
   const { data: signer, isError, isLoading } = useSigner()
   const [ loading, setLoading ] = useState(true);
+  const [ items, setItems] = useState(0);
 
   const contract = useContract({
     addressOrName: '0x292c25415dac88bfd9a0017270357e9d42b7deb7',
@@ -22,21 +23,28 @@ export default function Home() {
   })
 
   const colors = {
-    1: 'black',
-    2: 'white',
-    3: 'red',
-    4: 'orange',
-    5: 'green',
-    6: 'yellow'
+    1: 'black', //black
+    2: '#db2828', //red
+    3: '#21ba45', //green
+    4: '#fbbd08', //yealoww
+    5: '#b5cc18', // olive
+    6: '#f2711c',//orange
+    7: '#00b5ad', //teal
+    8: '#2185d0', //blue
+    9: '#6435c9', // violet
+    10: '#a333c8', //purple
+    11: '#e03997', //pink
+    12: 'white', //white
   }
 
+  
   useEffect(() => {
-    if(data){
+    if(data && loading){
       setResults(data.data);
     }
     
     console.log(contract);
-    if(!contract.provider) return;
+    if(!(contract.provider) || !(loading)) return;
     getData();
   }, [contract.provider])
 
@@ -73,7 +81,7 @@ export default function Home() {
         })));
       
       res.push(curr);
-
+      setItems(requests.length);
       return curr !== undefined && requests.length
         ? fn(requests.splice(0, 50), res)
         : res
@@ -101,7 +109,7 @@ export default function Home() {
   
   return (
     <div className={styles.container}>
-      <Header loading={loading} date={data.date}/>
+      <Header loading={loading} date={data.date} items={items}/>
 
       <main className={styles.main}>
         <div className='canvas-container'>
@@ -123,12 +131,49 @@ export default function Home() {
       console.log('without owner', element);
       Swal.fire({
         title: 'Square ' + element.index,
-        html: "You can buy this square <br/> <br/> Price: 3 FTM <br/><br/> Choose a color: <br/> <input type='color' value='black'/>",
+        html: "You can buy this square <br/> <br/> Price: 3 FTM <br/><br/> Choose a color: <br/> "+ 
+
+        '<input type="radio" name="color" id="black" value="1" />' +
+        '<label for="black"><span class="black"></span></label>'+
+
+        '<input type="radio" name="color" id="red" value="2" />' +
+        '<label for="red"><span class="red"></span></label>'+
+
+        '<input type="radio" name="color" id="green" value="3" />'+
+        '<label for="green"><span class="green"></span></label>'+
+
+        '<input type="radio" name="color" id="yellow" value="4"/>'+
+        '<label for="yellow"><span class="yellow"></span></label>'+
+
+        '<input type="radio" name="color" id="olive" value="5" />'+
+        '<label for="olive"><span class="olive"></span></label>'+
+
+        '<input type="radio" name="color" id="orange" value="6"/>'+
+        '<label for="orange"><span class="orange"></span></label>'+
+
+        '<input type="radio" name="color" id="teal" value="7"/>'+
+        '<label for="teal"><span class="teal"></span></label>'+
+
+        '<input type="radio" name="color" id="blue" value="8"/>'+
+        '<label for="blue"><span class="blue"></span></label>'+
+
+        '<input type="radio" name="color" id="violet" value="9"/>'+
+        '<label for="violet"><span class="violet"></span></label>'+
+
+        '<input type="radio" name="color" id="purple" value="10"/>'+
+        '<label for="purple"><span class="purple"></span></label>'+
+
+        '<input type="radio" name="color" id="pink" value="11"/>' +
+        '<label for="pink"><span class="pink"></span></label>' +
+
+        '<input type="radio" name="color" id="white" value="12"/>' +
+        '<label for="white"><span class="white"></span></label>',
         icon: 'none',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Mint!'
+        confirmButtonText: 'Mint!',
+        customClass: 'swal-wide',
       }).then((result) => {
         if (result.isConfirmed) {
           buy(element.index)
@@ -137,13 +182,21 @@ export default function Home() {
     }
   }
 
-  async function buy(id, color = 1){
+  async function buy(id){
     let overrides = {
       value: ethers.utils.parseEther("1")
     };
+
+    let color = document.querySelectorAll('input[name=color]:checked');
     
-    let tx = await contract.mintPublic(id, color, overrides);
+    let tx = await contract.mintPublic(id, color[0].value, overrides);
     console.log(tx);
+
+    //Swal.fire('Success', 'Square minted', 'success')
+    let data = results;
+    data[id] = { id: id, color: color[0].value};
+    setResults(data);
+    setItems(id);
   }
 
   function Canvas() {
@@ -163,19 +216,5 @@ export default function Home() {
   
       </div>
     );
-  }
-
-  function LoadingCanvas() {
-    return (
-      <div className='canvas' style={{ textAlign: ' center'}}>
-  
-        Loading...
-
-        <br/>
-        <br/>
-        <br/>
-        <br/>
-      </div>
-    );
-  }  
+  } 
 }
